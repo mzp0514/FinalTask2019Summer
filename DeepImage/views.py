@@ -7,6 +7,7 @@ from django.contrib.auth.models import User
 from .forms import LoginForm, RegisterForm, PhotoForm
 from .image import process
 from .models import Record
+import os
 import requests
 import time
 import datetime
@@ -105,7 +106,6 @@ def upload_view(request):
 
     elif request.method == 'POST':
         data = {}
-        print(request.content_type)
         if request.POST.get('fromurl') is None:
             form = PhotoForm(request.POST, request.FILES)
             if form.is_valid():
@@ -126,6 +126,7 @@ def upload_view(request):
                 data = {'is_valid': False}
         else:
             url = request.POST.get('fileurl')
+            print(url)
             if url is not None:
                 try:
                     res = requests.get(url)
@@ -149,10 +150,9 @@ def upload_view(request):
                                     'output_url1': output_url1, 'output_url2': output_url2}
 
                     else:
-                        print(res.status_code)
-                        data = {'is_valid': False}
+                        data = {'is_valid': False, 'error': str(res.status_code)}
                 except Exception as e:
-                    data = {'is_valid': False}
+                    data = {'is_valid': False, 'error': 'cannot get url'}
         return JsonResponse(data)
 
 
@@ -192,9 +192,17 @@ def delete_view(request):
 
     if request.method == 'POST':
         del_list = request.POST.getlist('record')
+        print(del_list)
         for rcd in records:
             if str(rcd.id) in del_list:
+                if os.path.exists(rcd.original_url):
+                    os.remove(rcd.original_url)
+                if os.path.exists(rcd.processed_url1):
+                    os.remove(rcd.processed_url1)
+                if os.path.exists(rcd.processed_url2):
+                    os.remove(rcd.processed_url2)
                 rcd.delete()
+
         return HttpResponseRedirect('/DeepImage/records')
 
 

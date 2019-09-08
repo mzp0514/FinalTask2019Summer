@@ -52,6 +52,9 @@ $(function () {
             "<td><img src='" + data.result.output_url2 + "'style='max-width: 350px; max-height: 350px;'></td></tr>"
         )
       }
+      else{
+          alert('error')
+      }
     }
   });
 
@@ -69,7 +72,7 @@ $(function () {
           )
         }
         else{
-          alert('error');
+          alert(response['error']);
         }
       }
     })
